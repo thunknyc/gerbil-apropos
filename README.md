@@ -32,4 +32,22 @@ Tool for generating exported Gerbil names
 12:41 V<vyzo> errr (gx#current-expander-module-registry)
 12:42 V<vyzo> this will give you a hash table of module id or path -> module object
 12:42 V<vyzo> which you can get the export symbols in the same way
+12:43 E<edw> vyzo: Thanks! I've recorded for posterity and my future reference: <https://github.com/thunknyc/gerbil-names-index/>.
+12:52 E<edw> How would you like module-qualified names to be referred to? E.g. name `baz` in module `:foo/bar`.
+12:56 E<edw> For now I'm going to emit a bunch of lists e.g. `((:foo/bar baz) ...)`.
+12:57 V<vyzo> you can look at the binding itself
+12:57 V<vyzo> and get the fully qualified name
+12:58 V<vyzo> core-resolve-module-export
+12:58 V<vyzo> will take an export
+12:58 V<vyzo> and resolve it to its binding
+12:59 V<vyzo> binding-id gives you the fully qualified name for the binding
+13:02 V<vyzo> you might have to import the expander itself for some symbols
+13:02 V<vyzo> try (import <expander-runtime>) first
+13:02 V<vyzo> and if some symbls are not accessible, just import the expander itself
+13:02 V<vyzo> (import :gerbil/expander)
+13:02 V<vyzo> so if you take the binding id
+13:02 V<vyzo> you can eval it
+13:03 V<vyzo> and it will give you the runtime value
+13:03 V<vyzo> which you can inspect to see what it is
+13:05 E<edw> Cool. I'm sure this will all make more sense as I dig into it.
 ```
