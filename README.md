@@ -28,4 +28,8 @@ Tool for generating exported Gerbil names
 12:38 V<vyzo> you can walk these directories looking for .ssi files
 12:38 V<vyzo> which you can import
 12:38 V<vyzo> and dump their symbols
+12:41 V<vyzo> for already imported ones, try (gx#current-module-registry)
+12:41 V<vyzo> errr (gx#current-expander-module-registry)
+12:42 V<vyzo> this will give you a hash table of module id or path -> module object
+12:42 V<vyzo> which you can get the export symbols in the same way
 ```
