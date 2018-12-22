@@ -50,4 +50,36 @@ Tool for generating exported Gerbil names
 13:03 V<vyzo> and it will give you the runtime value
 13:03 V<vyzo> which you can inspect to see what it is
 13:05 E<edw> Cool. I'm sure this will all make more sense as I dig into it.
+20:38 E<edw> vyzo: Is there a way I can eval X in the context of a module Y? so like, evaluate `'printf` in the context of `':std/format`, regardless of whether I have done an `(import :std/format)` at top level *if* that module has been loaded indirectly as part of another import?
+22:31 E<edw> Also, what are the `e` elements accessible via `syntax-binding-e`, `alias-binding-e`, `import-binding-e`?
+23:25 V<vyzo> yes, you can set the current-expander-context
+23:25 V<vyzo> it's a paramemter
+23:25 V<vyzo> you can set this to an arbitrary module context
+23:25 V<vyzo> and eval in the context
+23:26 V<vyzo> the -e elements depend on the binding
+23:26 V<vyzo> so look at the implementation of enter!
+23:26 V<vyzo> https://github.com/vyzo/gerbil/blob/master/src/gerbil/interactive/init.ss#L43
+08:18 E<edw> vyzo: Perfect! Thanks.
+11:17 E<edw> vyzo: If a module export is an import binding, how can I resolve it to its underlying module binding?
+11:18 V<vyzo> core-resolve-export should still resolve it
+11:18 V<vyzo> core-resolve-module-export
+11:20 V<vyzo> you can also try resolve-identifier on the import-binding-e if that doesn't work
+11:22 E<edw> Cool. I'll try those. I hope to have a toy version of Clojure-Grimoire-like thing by end of day.
+11:24 O<ober> nice
+11:24 V<vyzo> excellent
+11:28 E<edw> What is the `e` element of this binding objects? What does `e` mean?
+11:28 V<vyzo> e means element
+11:29 V<vyzo> it's the expander value
+11:29 V<vyzo> for syntax bindings it's the actual macro object
+11:29 V<vyzo> for other objects it can be a syntax object or just a symbol
+11:31 E<edw> Ah. So it's possible that the import-binding-e is another import-binding, and I should then recursively descend until I get a non-import-binding?
+11:31 E<edw> …because that's what I'm seeing.
+11:32 V<vyzo> yes
+11:32 V<vyzo> look at resolve-identifier in gerbil/expander/core
+11:32 V<vyzo> you should also be aware of alias-bindings
+11:34 E<edw> I check for them but just flag them as aliases atm. Can they be resolved using c-r-m-e as well?
+11:36 V<vyzo> they should resolve
+11:36 V<vyzo> but again, i don't remember :)
+11:36 V<vyzo> use resolve-identifier when in doubt
+11:37 E<edw> Haha. Will do.
 ```
