@@ -30,13 +30,8 @@
   (let* ((tree (map (lambda (f) (path-expand f d)) (directory-files d)))
          (children (map (lambda (d) (module-tree d base))
                         (filter file-directory? tree)))
-         (ssi-files (filter ssi-file? tree))
-         (module-names (map (lambda (m) (ssi-file->module-name m base))
-                            ssi-files))
-         (module-file-names ssi-files))
-    (append (map (lambda (n f) (list (string->symbol n) f))
-                 module-names module-file-names)
-            (concatenate children))))
+         (module-file-names (filter ssi-file? tree)))
+    (append module-file-names (concatenate children))))
 
 (def (module-forest)
   (append-map (lambda (d) (module-tree d d)) (expander-load-path)))
@@ -99,18 +94,48 @@
                               (symbol->string (car b)))))
      equal?)))
 
-(def (export-add! exports name mod type)
-  (let* ((name-entry (hash-ref exports name '())))
-    (hash-put! exports name (merge-export name-entry mod type))))
+(def (export-add! exports-hash index name mod type)
+  (let* ((index-hash (hash-ref exports-hash index (make-hash-table)))
+         (name-list (hash-ref index-hash name '()))
+         (new-name-list (merge-export name-list mod type)))
+    (hash-put! index-hash name new-name-list)
+    (hash-put! exports-hash index index-hash)))
 
-(def (accumulate-exports! mod+file accum)
-  (with ([mod file] mod+file)
-    (let* (ctx (import-module file #t #t))
-      (for (e (module-context-exports ctx))
-        (with ([mod name type] e)
-          (export-add! accum name mod type)))
-      accum)))
+(def (accumulate-exports! file accum)
+  (let (ctx (import-module file #t #t))
+    (for (e (module-context-exports ctx))
+      (with ([mod name type] e)
+        (export-add! accum 'names name mod type)
+        (export-add! accum 'modules mod name type)))
+    accum))
 
 (def (all-exports)
   (let (mods (module-forest))
     (fold accumulate-exports! (make-hash-table-eq) mods)))
+
+(def names-indices (all-exports))
+
+(def (hash-ref-in h ks (default '()))
+  (let lp ((ks ks) (h h))
+    (if (null? ks) h
+        (lp (cdr ks) (hash-ref h (car ks) default)))))
+
+(def (matching-keys h thing)
+  (filter (lambda (k)
+            (string-contains (symbol->string k) thing))
+          (hash-keys h)))
+
+(def (export-apropos* what q)
+  (matching-keys (hash-ref names-indices what) q))
+
+(def (apropos-results what ks)
+  (list what
+        (append-map
+         (lambda (k) (list k (hash-ref-in names-indices (list what k))))
+         ks)))
+
+(def (exports-apropos thing)
+  (let* ((q (format "~A" thing))
+         (names (export-apropos* 'names q))
+         (modules (export-apropos* 'modules q)))
+    (map (cut apropos-results <> <>) '(names modules) (list names modules))))
