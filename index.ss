@@ -15,6 +15,9 @@
         :std/pregexp
         (only-in :std/srfi/1 append-map concatenate delete-duplicates! fold))
 
+(export apropos apropos-re build-apropos-db)
+(extern expander-load-path)
+
 (def (file-directory? f)
   (eq? (file-type f) 'directory))
 
@@ -156,5 +159,5 @@
 
 (def (apropos thing (adb apropos-db))
   (let* ((q (format "~A" thing))
-         (filter-proc (constains-filter-proc q)))
+         (filter-proc (contains-filter-proc q)))
     (map (cut apropos-results adb <> filter-proc) apropos-keys)))
