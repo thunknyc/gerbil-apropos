@@ -15,6 +15,9 @@
         :std/pregexp
         (only-in :std/srfi/1 append-map concatenate delete-duplicates! fold))
 
+(export apropos apropos-re build-apropos-db)
+(extern expander-load-path)
+
 (def (file-directory? f)
   (eq? (file-type f) 'directory))
 
