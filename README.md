@@ -1,6 +1,12 @@
 # gerbil-apropos
 For generating exported Gerbil names.
 
+## Installation
+
+```
+gxpkg install thunknyc/gerbil-apropos
+```
+
 ## Useful procedures
 
 * `apropos-re re-str [apropos-db]`
