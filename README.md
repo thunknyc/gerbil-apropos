@@ -13,12 +13,12 @@ gxpkg install github.com/thunknyc/gerbil-apropos
 
 > Import the apropos library.
 
-`apropos-re re-str [apropos-db]` 
+`apropos-re re-str [apropos-db]`  
 `apropos string-or-symbol [apropos-db]`
 
-> Core lookup procedures. Use them to produce a list of matching
-names and modules using either a regular expression string
-(`apropos-re`) or a string or symbol (`apropos`) to match.
+> Core lookup procedures. Produce a list of matching names and
+modules using either a regular expression string (`apropos-re`)
+or a string or symbol (`apropos`) to match on a substring basis.
 
 `make-apropos-db [load-path]`
 
