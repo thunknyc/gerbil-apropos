@@ -18,7 +18,7 @@
         apropos apropos-re
         module-exports)
 
-(extern expander-load-path)
+(extern namespace: #f expander-load-path)
 
 (def (file-directory? f)
   (eq? (file-type f) 'directory))
