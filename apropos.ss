@@ -127,12 +127,13 @@
   (let (mods (module-forest load-path))
     (tidy-exports! (fold accumulate-exports! (make-hash-table-eq) mods))))
 
-(def private-current-apropos-db (make-apropos-db))
+(def private-current-apropos-db
+  (delay (make-apropos-db)))
 
 (def (current-apropos-db . o)
   (if (pair? o)
     (let (new (car o)) (set! private-current-apropos-db new))
-    private-current-apropos-db))
+    (force private-current-apropos-db)))
 
 (def (hash-ref-in h ks (default '()))
   (let lp ((ks ks) (h h))
@@ -158,12 +159,12 @@
 (def (contains-filter-proc q)
   (lambda (sym) (string-contains (symbol->string sym) q)))
 
-(def (apropos-re re-str (adb private-current-apropos-db))
+(def (apropos-re re-str (adb (current-apropos-db)))
   (let* ((q (pregexp re-str))
          (filter-proc (re-filter-proc q)))
     (map (cut apropos-results adb <> filter-proc) apropos-keys)))
 
-(def (apropos thing (adb private-current-apropos-db))
+(def (apropos thing (adb (current-apropos-db)))
   (let* ((q (format "~A" thing))
          (filter-proc (contains-filter-proc q)))
     (map (cut apropos-results adb <> filter-proc) apropos-keys)))
