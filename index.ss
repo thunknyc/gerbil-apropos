@@ -159,14 +159,12 @@
 (def (contains-filter-proc q)
   (lambda (sym) (string-contains (symbol->string sym) q)))
 
-(def (apropos-re re-str (adb private-current-apropos-db))
-  (let* ((adb (force adb))
-         (q (pregexp re-str))
+(def (apropos-re re-str (adb (current-apropos-db)))
+  (let* ((q (pregexp re-str))
          (filter-proc (re-filter-proc q)))
     (map (cut apropos-results adb <> filter-proc) apropos-keys)))
 
-(def (apropos thing (adb private-current-apropos-db))
-  (let* ((adb (force adb))
-         (q (format "~A" thing))
+(def (apropos thing (adb (current-apropos-db)))
+  (let* ((q (format "~A" thing))
          (filter-proc (contains-filter-proc q)))
     (map (cut apropos-results adb <> filter-proc) apropos-keys)))
