@@ -17,9 +17,9 @@ gxpkg install github.com/thunknyc/gerbil-apropos
 `gxaproposd` (Not currently implemented)
 
 > The `gxaproposd` daemon will output results for each regular
-  expression sent to stdin followed by a newline. The allows the small
+  expression sent to stdin followed by a newline. This allows the small
   but non-trivial startup time associated with constructing the
-  apropos database.
+  apropos database to be amortized over potentially many lookups.
 
 `(import :thunknyc/apropos)`
 
