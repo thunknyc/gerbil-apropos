@@ -4,7 +4,7 @@ For generating exported Gerbil names.
 ## Installation
 
 ```
-gxpkg install github.com/thunknyc/apropos
+gxpkg install github.com/thunknyc/gerbil-apropos
 ```
 
 ## Useful procedures
