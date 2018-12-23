@@ -1,5 +1,5 @@
-# gerbil-names-index
-Tool for generating exported Gerbil names.
+# gerbil-apropos
+For generating exported Gerbil names.
 
 ## Useful procedures
 
