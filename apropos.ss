@@ -127,9 +127,10 @@
     (tidy-exports! (fold accumulate-exports! (make-hash-table-eq) mods))))
 
 (def private-current-apropos-db
-  (delay ((lambda ()
-            (_gx#load-expander!)
-            (make-apropos-db)))))
+  (delay
+    (begin
+      (_gx#load-expander!)
+      (make-apropos-db))))
 
 (def (current-apropos-db . o)
   (if (pair? o)
