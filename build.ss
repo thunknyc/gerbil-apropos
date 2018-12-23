@@ -3,4 +3,6 @@
 (import :std/build-script)
 
 (defbuild-script
-  '("apropos"))
+  '("apropos"
+    ;;     v--source?          v--binary?
+    (exe: "apropos-tool" bin: "gxapropos")))

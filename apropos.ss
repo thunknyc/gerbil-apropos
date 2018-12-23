@@ -12,12 +12,19 @@
         :std/pregexp
         (only-in :std/srfi/1 append-map concatenate delete-duplicates! fold))
 
-(export current-apropos-db
+(export init-apropos
+        current-apropos-db
         make-apropos-db
         apropos apropos-re
         module-exports)
 
 (extern namespace: #f expander-load-path)
+
+;(def expander-load-path #f)
+
+(def (init-apropos)
+  (_gx#load-expander!)
+  (set! expander-load-path (eval 'expander-load-path)))
 
 (def (file-directory? f)
   (eq? (file-type f) 'directory))
@@ -38,6 +45,7 @@
     (append module-file-names (concatenate children))))
 
 (def (module-forest load-path)
+  (_gx#load-expander!)
   (append-map (lambda (d) (module-tree d d)) load-path))
 
 (def (eval-in-context name ctx)
