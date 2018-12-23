@@ -1,10 +1,8 @@
 (export main)
 
-(import
-;  :gerbil/expander
-  :std/iter
-  :std/format
-  :thunknyc/apropos)
+(import :std/iter
+        :std/format
+        :thunknyc/apropos)
 
 (def (main . args)
   (init-apropos)

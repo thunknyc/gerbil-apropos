@@ -4,5 +4,4 @@
 
 (defbuild-script
   '("apropos"
-    ;;     v--source?          v--binary?
     (exe: "apropos-tool" bin: "gxapropos")))
