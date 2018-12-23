@@ -12,6 +12,7 @@
         :std/sort
         :std/sugar
         :std/srfi/13
+        :std/pregexp
         (only-in :std/srfi/1 append-map concatenate delete-duplicates! fold))
 
 (def (file-directory? f)
@@ -99,50 +100,61 @@
         (export-add! accum 'modules mod name type)))
     accum))
 
-(def (tidy-entry col)
+(def apropos-keys '(names modules))
+
+(def (tidy-entry entry)
   (delete-duplicates!
-   (sort! col (lambda (a b)
+   (sort! entry (lambda (a b)
                 (string<? (symbol->string (car a))
                           (symbol->string (car b)))))))
 
-(def (tidy-index! e index)
-  (let (index-hash (hash-ref e index (make-hash-table-eq)))
-    (hash-for-each (lambda (k v) (hash-put! index-hash k (tidy-entry v)))
+(def (tidy-index! adb index)
+  (let (index-hash (hash-ref adb index (make-hash-table-eq)))
+    (hash-for-each (lambda (k v)
+                     (hash-put! index-hash k (tidy-entry v)))
                    index-hash))
-  e)
+  adb)
 
-(def (tidy-exports! e)
-  (tidy-index! e 'names)
-  (tidy-index! e 'modules)
-  e)
+(def (tidy-exports! adb)
+  (for-each (lambda (n) (tidy-index! adb n)) apropos-keys)
+  adb)
 
-(def (all-exports)
+(def (build-apropos-db)
   (let (mods (module-forest))
     (tidy-exports! (fold accumulate-exports! (make-hash-table-eq) mods))))
 
-(def names-indices (all-exports))
+(def apropos-db (build-apropos-db))
 
 (def (hash-ref-in h ks (default '()))
   (let lp ((ks ks) (h h))
     (if (null? ks) h
         (lp (cdr ks) (hash-ref h (car ks) default)))))
 
-(def (matching-keys h thing)
-  (filter (lambda (k)
-            (string-contains (symbol->string k) thing))
-          (hash-keys h)))
+(def (matching-keys h proc)
+  (filter proc (hash-keys h)))
 
-(def (export-apropos* what q)
-  (matching-keys (hash-ref names-indices what) q))
+(def (apropos-index adb what filter-proc)
+  (matching-keys (hash-ref adb what) filter-proc))
 
-(def (apropos-results what ks)
-  (list what
-        (map
-         (lambda (k) (list k (hash-ref-in names-indices (list what k))))
-         ks)))
+(def (apropos-results adb what filter-proc)
+  (let (ks (apropos-index adb what filter-proc))
+    (list what
+          (map (lambda (k)
+                 (list k (hash-ref-in adb (list what k))))
+               ks))))
 
-(def (exports-apropos thing)
+(def (re-filter-proc q)
+  (lambda (sym) (pregexp-match q (symbol->string sym))))
+
+(def (contains-filter-proc q)
+  (lambda (sym) (string-contains (symbol->string sym) q)))
+
+(def (apropos-re re-str (adb apropos-db))
+  (let* ((q (pregexp re-str))
+         (filter-proc (re-filter-proc q)))
+    (map (cut apropos-results adb <> filter-proc) apropos-keys)))
+
+(def (apropos thing (adb apropos-db))
   (let* ((q (format "~A" thing))
-         (names (export-apropos* 'names q))
-         (modules (export-apropos* 'modules q)))
-    (map (cut apropos-results <> <>) '(names modules) (list names modules))))
+         (filter-proc (constains-filter-proc q)))
+    (map (cut apropos-results adb <> filter-proc) apropos-keys)))
