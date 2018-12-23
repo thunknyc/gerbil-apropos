@@ -1,12 +1,9 @@
 ;;
-;; Gerbil module index generator
+;; Gerbil apropos facility
 ;; Edwin Watkeys, edw@poseur.com
 ;;
-;; Usage example: (def e (all-exports))
-;;
 
-(import <expander-runtime>
-        :gerbil/expander
+(import :gerbil/expander
         :std/format
         :std/iter
         :std/sort
@@ -15,7 +12,11 @@
         :std/pregexp
         (only-in :std/srfi/1 append-map concatenate delete-duplicates! fold))
 
-(export apropos apropos-re build-apropos-db)
+(export current-apropos-db
+        make-apropos-db
+        apropos apropos-re
+        module-exports)
+
 (extern expander-load-path)
 
 (def (file-directory? f)
@@ -36,8 +37,8 @@
          (module-file-names (filter ssi-file? tree)))
     (append module-file-names (concatenate children))))
 
-(def (module-forest)
-  (append-map (lambda (d) (module-tree d d)) (expander-load-path)))
+(def (module-forest load-path)
+  (append-map (lambda (d) (module-tree d d)) load-path))
 
 (def (eval-in-context name ctx)
   (parameterize ((current-expander-context ctx))
@@ -122,11 +123,16 @@
   (for-each (lambda (n) (tidy-index! adb n)) apropos-keys)
   adb)
 
-(def (build-apropos-db)
-  (let (mods (module-forest))
+(def (make-apropos-db (load-path (expander-load-path)))
+  (let (mods (module-forest load-path))
     (tidy-exports! (fold accumulate-exports! (make-hash-table-eq) mods))))
 
-(def apropos-db (build-apropos-db))
+(def private-current-apropos-db (make-apropos-db))
+
+(def (current-apropos-db . o)
+  (if (pair? o)
+    (let (new (car o)) (set! private-current-apropos-db new))
+    private-current-apropos-db))
 
 (def (hash-ref-in h ks (default '()))
   (let lp ((ks ks) (h h))
@@ -152,12 +158,12 @@
 (def (contains-filter-proc q)
   (lambda (sym) (string-contains (symbol->string sym) q)))
 
-(def (apropos-re re-str (adb apropos-db))
+(def (apropos-re re-str (adb private-current-apropos-db))
   (let* ((q (pregexp re-str))
          (filter-proc (re-filter-proc q)))
     (map (cut apropos-results adb <> filter-proc) apropos-keys)))
 
-(def (apropos thing (adb apropos-db))
+(def (apropos thing (adb private-current-apropos-db))
   (let* ((q (format "~A" thing))
          (filter-proc (contains-filter-proc q)))
     (map (cut apropos-results adb <> filter-proc) apropos-keys)))
