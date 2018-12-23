@@ -1,4 +1,4 @@
-# (Gerbil) apropos
+# Gerbil apropos
 For generating exported Gerbil names.
 
 ## Installation
