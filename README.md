@@ -4,7 +4,7 @@ For generating exported Gerbil names.
 ## Installation
 
 ```
-gxpkg install thunknyc/gerbil-apropos
+gxpkg install thunknyc/apropos
 ```
 
 ## Useful procedures
