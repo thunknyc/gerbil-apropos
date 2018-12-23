@@ -12,8 +12,7 @@
         :std/sort
         :std/sugar
         :std/srfi/13
-        (only-in :std/generic type-of)
-        (only-in :std/srfi/1 append-map concatenate delete-duplicates fold))
+        (only-in :std/srfi/1 append-map concatenate delete-duplicates! fold))
 
 (def (file-directory? f)
   (eq? (file-type f) 'directory))
@@ -40,20 +39,16 @@
   (parameterize ((current-expander-context ctx))
     (eval name)))
 
-(def (bound-in-context? name ctx)
-  (parameterize ((current-expander-context ctx))
-    (core-bound-identifier? name)))
-
 (def (object-type-name o)
   (caddr (struct->list (object-type o))))
 
 (def (binding-type b ctx)
-  (if (bound-in-context? b ctx)
+  (try
     (let (o (eval-in-context (binding-id b) ctx))
       (cond ((procedure? o) 'procedure)
             ((object? o) (object-type-name o))
             (else 'unknown)))
-    'syntax))
+    (catch (e) 'syntax)))
 
 (def (module-binding-type b ctx (quiet? #f))
   (cond ((module-binding? b) (binding-type b ctx))
@@ -87,12 +82,7 @@
     (module-context-exports ctx)))
 
 (def (merge-export entry mod type)
-  (let (entry (cons (list mod type) entry))
-    (delete-duplicates
-     (sort! entry (lambda (a b)
-                    (string<? (symbol->string (car a))
-                              (symbol->string (car b)))))
-     equal?)))
+  (cons (list mod type) entry))
 
 (def (export-add! exports-hash index name mod type)
   (let* ((index-hash (hash-ref exports-hash index (make-hash-table)))
@@ -109,9 +99,26 @@
         (export-add! accum 'modules mod name type)))
     accum))
 
+(def (tidy-entry col)
+  (delete-duplicates!
+   (sort! col (lambda (a b)
+                (string<? (symbol->string (car a))
+                          (symbol->string (car b)))))))
+
+(def (tidy-index! e index)
+  (let (index-hash (hash-ref e index (make-hash-table-eq)))
+    (hash-for-each (lambda (k v) (hash-put! index-hash k (tidy-entry v)))
+                   index-hash))
+  e)
+
+(def (tidy-exports! e)
+  (tidy-index! e 'names)
+  (tidy-index! e 'modules)
+  e)
+
 (def (all-exports)
   (let (mods (module-forest))
-    (fold accumulate-exports! (make-hash-table-eq) mods)))
+    (tidy-exports! (fold accumulate-exports! (make-hash-table-eq) mods))))
 
 (def names-indices (all-exports))
 
@@ -130,7 +137,7 @@
 
 (def (apropos-results what ks)
   (list what
-        (append-map
+        (map
          (lambda (k) (list k (hash-ref-in names-indices (list what k))))
          ks)))
 
