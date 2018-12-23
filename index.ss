@@ -3,7 +3,8 @@
 ;; Edwin Watkeys, edw@poseur.com
 ;;
 
-(import :gerbil/expander
+(import <expander-runtime>
+        :gerbil/expander
         :std/format
         :std/iter
         :std/sort
