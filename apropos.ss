@@ -12,19 +12,10 @@
         :std/pregexp
         (only-in :std/srfi/1 append-map concatenate delete-duplicates! fold))
 
-(export init-apropos
-        current-apropos-db
+(export current-apropos-db
         make-apropos-db
         apropos apropos-re
         module-exports)
-
-(extern namespace: #f expander-load-path)
-
-;(def expander-load-path #f)
-
-(def (init-apropos)
-  (_gx#load-expander!)
-  (set! expander-load-path (eval 'expander-load-path)))
 
 (def (file-directory? f)
   (eq? (file-type f) 'directory))
@@ -45,7 +36,6 @@
     (append module-file-names (concatenate children))))
 
 (def (module-forest load-path)
-  (_gx#load-expander!)
   (append-map (lambda (d) (module-tree d d)) load-path))
 
 (def (eval-in-context name ctx)
@@ -131,12 +121,15 @@
   (for-each (lambda (n) (tidy-index! adb n)) apropos-keys)
   adb)
 
-(def (make-apropos-db (load-path (expander-load-path)))
+(def (make-apropos-db (load-path (current-expander-module-library-path)))
+  (eprintf "c-e-m-l-p: ~S\n" load-path)
   (let (mods (module-forest load-path))
     (tidy-exports! (fold accumulate-exports! (make-hash-table-eq) mods))))
 
 (def private-current-apropos-db
-  (delay (make-apropos-db)))
+  (delay ((lambda ()
+            (_gx#load-expander!)
+            (make-apropos-db)))))
 
 (def (current-apropos-db . o)
   (if (pair? o)

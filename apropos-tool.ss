@@ -5,6 +5,6 @@
         :thunknyc/apropos)
 
 (def (main . args)
-  (init-apropos)
+  ;(init-apropos)
   (for ((a args))
     (printf "~S\n" (apropos-re a))))

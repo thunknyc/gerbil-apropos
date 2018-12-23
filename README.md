@@ -27,13 +27,6 @@ gxpkg install github.com/thunknyc/gerbil-apropos
 
 ### Procedures
 
-`init-apropos`
-
-> If you use this module from a compiled program, you must evaluate
-  this procedure before evaluating any of the procedures below. It
-  properly initializes the runtime expander, which is not typically
-  available in compiled programs.
-
 `apropos-re re-str [apropos-db]`  
 `apropos string-or-symbol [apropos-db]`
 
