@@ -122,7 +122,6 @@
   adb)
 
 (def (make-apropos-db (load-path (current-expander-module-library-path)))
-  (eprintf "c-e-m-l-p: ~S\n" load-path)
   (let (mods (module-forest load-path))
     (tidy-exports! (fold accumulate-exports! (make-hash-table-eq) mods))))
 
