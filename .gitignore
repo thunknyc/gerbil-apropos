@@ -1,4 +1,4 @@
-build-deps
 *~
-#*
-apropos-tool
+.DS_Store
+\#*
+build-deps
